@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>♡ Mural Colaborativo ♡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1 class="titulo">✮⋆˚｡𖦹⋆｡°✩ Mural Colaborativo ✩°｡⋆𖦹 ｡˚⋆✮ </h1>
+    <div class="marquee">
+      <span>★ bem-vindo ao mural ★ deixe seu recadinho ★ clique duas vezes no mural pra criar um post-it ★ 🐈‍⬛ ★</span>
+    </div>
+  </header>
+
+  <div class="barra">
+    <button id="btn-novo" class="botao">+ novo recadinho</button>
+
+    <div class="paleta" id="paleta">
+      <button data-cor="#ffb3d9" class="ativa" style="--c:#ffb3d9" title="rosa"></button>
+      <button data-cor="#d9b3ff" style="--c:#d9b3ff" title="lilás"></button>
+      <button data-cor="#b3e0ff" style="--c:#b3e0ff" title="azul bebê"></button>
+      <button data-cor="#fff3a3" style="--c:#fff3a3" title="amarelinho"></button>
+      <button data-cor="#b8f5d0" style="--c:#b8f5d0" title="menta"></button>
+    </div>
+
+    <span class="status" id="status">● offline</span>
+    <span class="status" id="servidor">servidor: —</span>
+  </div>
+
+  <main id="mural" class="mural"></main>
+
+  <footer>melhor visualizado em 1024x768 ♡ feito com amor e docker ♡ 2026</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #6b2c5a;
+  /* fundo de bolinhas */
+  background-color: #ffe4f2;
+  background-image:
+    radial-gradient(#ffb6dd 2px, transparent 2px),
+    radial-gradient(#ffc9e6 2px, transparent 2px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* ---------- topo ---------- */
+.topo { text-align: center; padding-top: 16px; }
+
+.titulo {
+  margin: 0;
+  font-family: 'Pacifico', inherit;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  background: linear-gradient(90deg, #ff3fa4, #c77dff, #7ad7ff, #ff3fa4);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: arco-iris 6s linear infinite;
+  filter: drop-shadow(2px 2px 0 #fff) drop-shadow(3px 3px 0 #ff9ccf);
+}
+@keyframes arco-iris { to { background-position: 300% 0; } }
+
+.marquee {
+  margin-top: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  background: #ff69b4;
+  color: #fff;
+  border-block: 3px double #fff;
+}
+.marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: rolar 18s linear infinite;
+}
+@keyframes rolar { to { transform: translateX(-100%); } }
+
+/* ---------- barra de ferramentas ---------- */
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.botao {
+  font-family: inherit;
+  font-size: 22px;
+  color: #fff;
+  padding: 6px 18px;
+  border: 3px outset #ffc2e2;
+  border-radius: 999px;
+  background: linear-gradient(#ff9ad5, #ff4fa8);
+  text-shadow: 1px 1px 0 #c2185b;
+  box-shadow: 0 0 12px #ff9ad5;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.botao:hover  { transform: scale(1.05); filter: brightness(1.1); }
+.botao:active { border-style: inset; }
+
+.paleta { display: flex; gap: 6px; }
+.paleta button {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: var(--c);
+  box-shadow: 0 0 0 2px #ff9ccf;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.paleta button.ativa {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px #ff3fa4, 0 0 10px #ff3fa4;
+}
+
+.status {
+  background: #fff;
+  border: 2px dashed #ff9ccf;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+/* ---------- mural ---------- */
+.mural {
+  position: relative;
+  flex: 1;
+  min-height: 70vh;
+  margin: 0 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .55);
+  border: 4px dashed #ff9ccf;
+  border-radius: 24px;
+}
+
+/* ---------- post-it estilo janelinha ---------- */
+.nota {
+  --cor: #ffb3d9;
+  position: absolute;
+  width: 210px;
+  background: var(--cor);
+  border: 2px solid #fff;
+  outline: 2px solid #ff69b4;
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 rgba(255, 105, 180, .4);
+  animation: aparecer .25s ease-out;
+}
+@keyframes aparecer { from { transform: scale(0); } }
+
+.nota.arrastando {
+  transform: rotate(-3deg) scale(1.04);
+  box-shadow: 8px 10px 0 rgba(255, 105, 180, .35);
+}
+
+.nota-barra {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  background: linear-gradient(90deg, #ff4fa8, #ff7de1);
+  color: #fff;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* deixa arrastar no celular */
+}
+.nota.arrastando .nota-barra { cursor: grabbing; }
+
+.nota-titulo { flex: 1; font-size: 18px; }
+
+.nota-barra button {
+  width: 22px; height: 20px;
+  padding: 0;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: #c2185b;
+  background: #ffe4f2;
+  border: 2px outset #fff;
+  cursor: pointer;
+}
+.nota-barra button:active { border-style: inset; }
+
+.nota-texto {
+  display: block;
+  width: 100%;
+  height: 130px;
+  padding: 4px 8px;
+  resize: none;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 24px;
+  color: #6b2c5a;
+  /* linhas de caderno */
+  background: repeating-linear-gradient(
+    transparent 0 23px,
+    rgba(255, 105, 180, .35) 23px 24px
+  );
+}
+
+footer { text-align: center; padding: 12px; font-size: 16px; opacity: .8; }
+
+/* ---------- brilhinhos do mouse ---------- */
+.brilho {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  color: #c4c4c4;
+  font-size: 14px;
+  animation: brilhar .8s ease-out forwards;
+}
+@keyframes brilhar {
+  to { opacity: 0; transform: translateY(20px) scale(.3) rotate(180deg); }
+}
