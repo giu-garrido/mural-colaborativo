@@ -1,7 +1,7 @@
 services:
   nginx:
     image: nginx:alpine
-    ports: ["8081:80"]                 # porta 8080 do seu PC -> porta 80 do container
+    ports: ["8081:80"]                 # porta 8081 do seu PC -> porta 80 do container
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro  # nossa config substitui a padrão

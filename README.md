@@ -5,7 +5,7 @@
 ## Arquitetura
 
 ```
-Navegador ──► Nginx (:8080) ──► server (Node + Socket.IO, :3000) ──► Redis (:6379)
+Navegador ──► Nginx (:8081) ──► server (Node + Socket.IO, :3000) ──► Redis (:6379)
                                  server (réplica 2, opcional) ──┘
 ```
 
@@ -15,7 +15,7 @@ Navegador ──► Nginx (:8080) ──► server (Node + Socket.IO, :3000) ─
 | `server` | Implementação própria (Node + Socket.IO) | Recebe os eventos dos clientes, grava no Redis e faz broadcast para todos |
 | `redis`  | `redis:7-alpine` (oficial)     | Guarda os post-its (hash `notes`: id → JSON) e faz o pub/sub entre réplicas |
 
-Só o Nginx fica exposto para fora (porta `8080`). O `server` e o Redis ficam na rede interna do Docker e se encontram pelo nome do serviço (`server`, `redis`).
+Só o Nginx fica exposto para fora (porta `8081`). O `server` e o Redis ficam na rede interna do Docker e se encontram pelo nome do serviço (`server`, `redis`).
 
 ### Fluxo de um evento
 
@@ -23,6 +23,18 @@ Só o Nginx fica exposto para fora (porta `8080`). O `server` e o Redis ficam na
 2. A réplica que recebeu o evento grava no Redis e faz broadcast.
 3. O adapter do Redis repassa o evento às outras réplicas.
 4. Todas as abas atualizam, não importa em qual réplica cada uma está conectada.
+
+## Status atual
+
+A infraestrutura já funciona: `docker compose up --build` sobe os três serviços e o site abre em http://localhost:8081. A sincronização em tempo real ainda **não** está pronta:
+
+| Parte | Situação |
+|-------|----------|
+| Infra (Docker Compose + Nginx + Redis) | Pronta |
+| `server/index.js` | Placeholder: aceita conexões Socket.IO e envia `notes:init` vazio. Ainda falta tratar os eventos, gravar no Redis e usar o Redis adapter |
+| `frontend/app.js` | Funciona só localmente (servidor simulado). Ainda falta conectar ao Socket.IO |
+
+Para conferir se o Nginx está alcançando o servidor Node, abra http://localhost:8081/socket.io/?EIO=4&transport=polling. Se aparecer um texto com `"sid"`, está tudo certo.
 
 ## Pré-requisitos
 
@@ -69,11 +81,11 @@ docker compose down            # para e remove os containers
 ├── frontend/            # servido pelo Nginx
 │   ├── index.html
 │   ├── style.css
-│   └── app.js           # render, arrastar/editar post-its, cliente Socket.IO
+│   └── app.js           # render, arrastar/editar post-its (cliente Socket.IO: a fazer)
 ├── server/              # serviço de implementação própria
 │   ├── Dockerfile
 │   ├── package.json
-│   └── index.js         # Express + Socket.IO + Redis
+│   └── index.js         # Socket.IO (placeholder; eventos + Redis: a fazer)
 └── docs/
     └── documentacao.pdf # documentação do projeto
 ```
