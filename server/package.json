@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js"
   },
-   "keywords": [],
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
