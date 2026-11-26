@@ -12,16 +12,16 @@ const httpServer = http.createServer((req, res) => {
 });
 const io = new Server(httpServer);
 
-// noServer: o ws só trata o /ws. Ligado direto no httpServer, ele recusava
-// os upgrades de /socket.io/ e quebrava o WebSocket do Socket.IO.
+// noServer: o ws só trata o /ws
+// ligado direto no httpServer, ele recusava os upgrades de /socket.io/ e quebrava o WebSocket do Socket.IO
 const wss = new WebSocket.Server({ noServer: true });
 httpServer.on("upgrade", (req, socket, head) => {
   if (req.url !== "/ws") return;
   wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
 });
 
-// Post-its ficam no hash "notes" do Redis: campo = id, valor = JSON da nota.
-// "sub" é uma segunda conexão, só para o pub/sub entre réplicas.
+// post-its ficam no hash "notes" do Redis: campo = id, valor = JSON da nota
+// "sub" é uma segunda conexão, só para o pub/sub entre réplicas
 const redis = createClient({ url: process.env.REDIS_URL });
 const sub = redis.duplicate();
 

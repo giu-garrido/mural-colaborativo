@@ -216,7 +216,7 @@ function gerarId() {
 }
 
 // ----------------------------------------------------------
-//  Toque anos 2000: brilhinhos seguindo o mouse ✦
+//  Toque anos 2000: brilhinhos seguindo o mouse
 // ----------------------------------------------------------
 let ultimoBrilho = 0;
 document.addEventListener("pointermove", (e) => {
