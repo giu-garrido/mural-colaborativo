@@ -1,6 +1,8 @@
 const http = require("http");
 const { Server } = require("socket.io");
 const WebSocket = require("ws");
+const { createClient } = require("redis");
+const { createAdapter } = require("@socket.io/redis-adapter");
 
 const port = Number(process.env.PORT) || 3000;
 const httpServer = http.createServer((req, res) => {
@@ -9,49 +11,66 @@ const httpServer = http.createServer((req, res) => {
   res.end("ok");
 });
 const io = new Server(httpServer);
-const wss = new WebSocket.Server({ server: httpServer, path: "/ws" });
 
-const notes = new Map([
-  [
-    "boas-vindas",
-    {
-      id: "boas-vindas",
-      text: "oiii! arrasta, edita e apaga à vontade ♡",
-      x: 40,
-      y: 40,
-      color: "#ffb3d9",
-    },
-  ],
-]);
+// noServer: o ws só trata o /ws. Ligado direto no httpServer, ele recusava
+// os upgrades de /socket.io/ e quebrava o WebSocket do Socket.IO.
+const wss = new WebSocket.Server({ noServer: true });
+httpServer.on("upgrade", (req, socket, head) => {
+  if (req.url !== "/ws") return;
+  wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+});
 
-io.on("connection", (socket) => {
+// Post-its ficam no hash "notes" do Redis: campo = id, valor = JSON da nota.
+// "sub" é uma segunda conexão, só para o pub/sub entre réplicas.
+const redis = createClient({ url: process.env.REDIS_URL });
+const sub = redis.duplicate();
+
+const boasVindas = {
+  id: "boas-vindas",
+  text: "oiii! arrasta, edita e apaga à vontade ♡",
+  x: 40,
+  y: 40,
+  color: "#ffb3d9",
+};
+
+async function lerNota(id) {
+  const json = await redis.hGet("notes", id);
+  return json && JSON.parse(json);
+}
+
+function salvarNota(note) {
+  return redis.hSet("notes", note.id, JSON.stringify(note));
+}
+
+io.on("connection", async (socket) => {
   console.log("cliente conectado:", socket.id);
-  socket.emit("notes:init", Array.from(notes.values()));
+  const notes = await redis.hVals("notes");
+  socket.emit("notes:init", notes.map((json) => JSON.parse(json)));
 
-  socket.on("note:create", (note) => {
+  socket.on("note:create", async (note) => {
     if (!note || typeof note.id !== "string") return;
-    notes.set(note.id, note);
+    await salvarNota(note);
     io.emit("note:create", note);
   });
 
-  socket.on("note:update", (update) => {
-    const note = notes.get(update?.id);
+  socket.on("note:update", async (update) => {
+    const note = await lerNota(update?.id);
     if (!note) return;
     const updatedNote = { ...note, ...update };
-    notes.set(updatedNote.id, updatedNote);
+    await salvarNota(updatedNote);
     io.emit("note:update", updatedNote);
   });
 
-  socket.on("note:move", (move) => {
-    const note = notes.get(move?.id);
+  socket.on("note:move", async (move) => {
+    const note = await lerNota(move?.id);
     if (!note) return;
     const movedNote = { ...note, x: move.x, y: move.y };
-    notes.set(movedNote.id, movedNote);
+    await salvarNota(movedNote);
     io.emit("note:move", { id: movedNote.id, x: movedNote.x, y: movedNote.y });
   });
 
-  socket.on("note:delete", (deletion) => {
-    if (!notes.delete(deletion?.id)) return;
+  socket.on("note:delete", async (deletion) => {
+    if (!(await redis.hDel("notes", deletion?.id ?? ""))) return;
     io.emit("note:delete", { id: deletion.id });
   });
 
@@ -84,6 +103,14 @@ setInterval(() => {
   broadcast({ time: new Date() });
 }, 5000);
 
-httpServer.listen(port, () => {
-  console.log(`Servidor HTTP, Socket.IO e WebSocket ouvindo na porta ${port}`);
-});
+async function iniciar() {
+  await Promise.all([redis.connect(), sub.connect()]);
+  io.adapter(createAdapter(redis, sub)); // io.emit passa a chegar em todas as réplicas
+  await redis.hSetNX("notes", boasVindas.id, JSON.stringify(boasVindas));
+
+  httpServer.listen(port, () => {
+    console.log(`Servidor HTTP, Socket.IO e WebSocket ouvindo na porta ${port}`);
+  });
+}
+
+iniciar();

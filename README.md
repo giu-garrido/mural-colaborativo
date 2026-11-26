@@ -26,13 +26,15 @@ Só o Nginx fica exposto para fora (porta `8081`). O `server` e o Redis ficam na
 
 ## Status atual
 
-A infraestrutura já funciona: `docker compose up --build` sobe os três serviços e o site abre em http://localhost:8081. A sincronização em tempo real ainda **não** está pronta:
+`docker compose up --build` sobe os três serviços e o site abre em http://localhost:8081. A sincronização em tempo real funciona, inclusive com mais de uma réplica do servidor:
 
 | Parte | Situação |
 |-------|----------|
-| Infra (Docker Compose + Nginx + Redis) | Pronta |
-| `server/index.js` | Placeholder: aceita conexões Socket.IO e envia `notes:init` vazio. Ainda falta tratar os eventos, gravar no Redis e usar o Redis adapter |
-| `frontend/app.js` | Funciona só localmente (servidor simulado). Ainda falta conectar ao Socket.IO |
+| Infra (Docker Compose + Nginx + Redis) | Pronta (Nginx com `ip_hash` para sticky session) |
+| `server/index.js` | Pronto: trata os eventos, grava os post-its no Redis e usa o Redis adapter entre réplicas |
+| `frontend/app.js` | Pronto: conectado ao servidor via Socket.IO |
+
+Para testar com duas réplicas: `docker compose up --build --scale server=2`.
 
 Para conferir se o Nginx está alcançando o servidor Node, abra http://localhost:8081/socket.io/?EIO=4&transport=polling. Se aparecer um texto com `"sid"`, está tudo certo.
 
@@ -81,21 +83,16 @@ docker compose down            # para e remove os containers
 ├── frontend/            # servido pelo Nginx
 │   ├── index.html
 │   ├── style.css
-│   └── app.js           # render, arrastar/editar post-its (cliente Socket.IO: a fazer)
+│   └── app.js           # render, criar/arrastar/editar/apagar post-its + cliente Socket.IO
 ├── server/              # serviço de implementação própria
 │   ├── Dockerfile
 │   ├── package.json
-│   └── index.js         # Socket.IO (placeholder; eventos + Redis: a fazer)
+│   └── index.js         # eventos Socket.IO, persistência no Redis e Redis adapter entre réplicas
 └── docs/
-    └── documentacao.pdf # documentação do projeto
+    ├── relatorio_mural_colaborativo_sbc.pdf  # relatório do projeto (formato artigo SBC)
+    └── projeto-final-comp-nuvem.pdf          # enunciado do projeto final
 ```
 
-## Equipe
+## Endpoint WebSocket nativo (`/ws`)
 
-| Papel                        | Integrante |
-|------------------------------|------------|
-| Infra                        | Giulia Garrido |
-| Backend                      |            |
-| Frontend                     |            |
-| Documentação (estrutura)     |            |
-| Documentação (conteúdo) + demo |          |
+Além do Socket.IO, o servidor expõe um endpoint WebSocket puro em `/ws` (também roteado pelo Nginx). Ele responde "Recebido!" a cada mensagem e envia a hora atual a cada 5 segundos para os clientes conectados. É independente do mural: a sincronização dos post-its usa só o Socket.IO.
