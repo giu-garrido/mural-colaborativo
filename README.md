@@ -83,21 +83,16 @@ docker compose down            # para e remove os containers
 ├── frontend/            # servido pelo Nginx
 │   ├── index.html
 │   ├── style.css
-│   └── app.js           # render, arrastar/editar post-its (cliente Socket.IO: a fazer)
+│   └── app.js           # render, criar/arrastar/editar/apagar post-its + cliente Socket.IO
 ├── server/              # serviço de implementação própria
 │   ├── Dockerfile
 │   ├── package.json
-│   └── index.js         # Socket.IO (placeholder; eventos + Redis: a fazer)
+│   └── index.js         # eventos Socket.IO, persistência no Redis e Redis adapter entre réplicas
 └── docs/
-    └── documentacao.pdf # documentação do projeto
+    ├── relatorio_mural_colaborativo_sbc.pdf  # relatório do projeto (formato artigo SBC)
+    └── projeto-final-comp-nuvem.pdf          # enunciado do projeto final
 ```
 
-## Equipe
+## Endpoint WebSocket nativo (`/ws`)
 
-| Papel                        | Integrante |
-|------------------------------|------------|
-| Infra                        | Giulia Garrido |
-| Backend                      |            |
-| Frontend                     |            |
-| Documentação (estrutura)     |            |
-| Documentação (conteúdo) + demo |          |
+Além do Socket.IO, o servidor expõe um endpoint WebSocket puro em `/ws` (também roteado pelo Nginx). Ele responde "Recebido!" a cada mensagem e envia a hora atual a cada 5 segundos para os clientes conectados. É independente do mural: a sincronização dos post-its usa só o Socket.IO.
